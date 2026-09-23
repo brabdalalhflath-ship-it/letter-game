@@ -1,4 +1,3 @@
-
 st.image("logo.png", width=180)
 
 بما أن الملف غير موجود بهذا الاسم، يظهر خطأ FileNotFoundError.
