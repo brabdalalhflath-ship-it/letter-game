@@ -1,13 +1,8 @@
-st.image("logo.png", width=180)
-
-بما أن الملف غير موجود بهذا الاسم، يظهر خطأ FileNotFoundError.
-🛠️ الكود المعدل الجاهز للاستخدام:
-قم بنسخ هذا الكود بالكامل واستبداله في ملف app.py (حيث تم تغيير اسم الصورة إلى RF.jpeg لحل المشكلة فوراً):
 import streamlit as st
 import streamlit.components.v1 as components
 import random
 
-# 1. إعدادات الصفحة
+# 1. Page Configuration
 st.set_page_config(page_title="لعبة الحروف الجماعية", page_icon="🏆", layout="centered")
 
 # PWA Code Injection
@@ -33,7 +28,7 @@ pwa_code = """
 """
 components.html(pwa_code, height=0)
 
-# 2. تصميم الترويسة الأنيقة باللون الأسود والذهبي مع الشعار
+# 2. Header Style
 st.markdown("""
     <style>
     .main-container {
@@ -60,12 +55,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# عرض الشعار والعنوان (تم تعديل اسم الصورة هنا إلى RF.jpeg)
+# Header with Image
 st.markdown('<div class="header-box">', unsafe_allow_html=True)
 st.image("RF.jpeg", width=180) 
 st.markdown('<div class="game-title">🎮 لعبة إنسان حيوان جماد</div></div>', unsafe_allow_html=True)
 
-# 3. اختيار نظام اللعب (فردي أو الفرق) وتسجيل الأسماء
+# 3. Game Settings
 st.sidebar.title("⚙️ إعدادات اللعبة")
 game_mode = st.sidebar.radio("اختر طريقة اللعب:", ["لعب فردي (لاعبين)", "لعب جماعي (فرق)"])
 
@@ -96,7 +91,7 @@ else:
 
     current_turn = st.sidebar.selectbox("الفريق الحالي:", teams)
 
-# 4. دالة المؤقت التنازلي التفاعلي
+# 4. Timer Function
 def show_timer(seconds=60):
     timer_html = f"""
     <div style="text-align: center; background: #0d0d0d; padding: 15px; border-radius: 15px; border: 2px solid #d4af37; max-width: 320px; margin: 0 auto 20px auto;">
@@ -128,10 +123,9 @@ def show_timer(seconds=60):
     """
     components.html(timer_html, height=160)
 
-# عرض المؤقت
 show_timer(60)
 
-# 5. منطق اللعبة الرئيسي
+# 5. Main Game Logic
 ALPHABET = ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'هـ', 'و', 'ي']
 CATEGORIES = ["إنسان", "حيوان", "جماد", "بلاد"]
 
@@ -175,10 +169,8 @@ if st.button("✅ التحقق والاحتساب", type="primary", use_containe
     else:
         st.info(f"👍 **جولة جيدة يا {current_turn}!** حصلت على {round_score} نقطة.")
 
-# 6. لوحة الصدارة وعرض النقاط
+# 6. Leaderboard
 st.markdown("---")
 st.subheader("📊 جدول النقاط الإجمالي")
 for entity, score in st.session_state.scores.items():
     st.write(f"🏆 **{entity}**: {score} نقطة")
-
-بعد حفظ الكود واضغط Commit changes، ستختفي الشاشة الحمراء وستعمل اللعبة فوراً مع عرض الشعار بوضوح!
