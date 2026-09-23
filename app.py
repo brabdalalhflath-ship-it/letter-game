@@ -1,10 +1,16 @@
+سبب المشكلة هو أنك رُفعت صورة الشعار باسم RF.jpeg، لكن الكود يحتوي على السطر التالي الذي يطلب البحث عن صورة باسم logo.png:
+st.image("logo.png", width=180)
+
+بما أن الملف غير موجود بهذا الاسم، يظهر خطأ FileNotFoundError.
+🛠️ الكود المعدل الجاهز للاستخدام:
+قم بنسخ هذا الكود بالكامل واستبداله في ملف app.py (حيث تم تغيير اسم الصورة إلى RF.jpeg لحل المشكلة فوراً):
 import streamlit as st
 import streamlit.components.v1 as components
 import random
 
 # 1. إعدادات الصفحة
 st.set_page_config(page_title="لعبة الحروف الجماعية", page_icon="🏆", layout="centered")
-st.image("RF.jpeg", width=180)
+
 # PWA Code Injection
 pwa_code = """
 <script>
@@ -55,9 +61,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# عرض الشعار والعنوان
+# عرض الشعار والعنوان (تم تعديل اسم الصورة هنا إلى RF.jpeg)
 st.markdown('<div class="header-box">', unsafe_allow_html=True)
-st.image("logo.png", width=180) 
+st.image("RF.jpeg", width=180) 
 st.markdown('<div class="game-title">🎮 لعبة إنسان حيوان جماد</div></div>', unsafe_allow_html=True)
 
 # 3. اختيار نظام اللعب (فردي أو الفرق) وتسجيل الأسماء
@@ -175,4 +181,5 @@ st.markdown("---")
 st.subheader("📊 جدول النقاط الإجمالي")
 for entity, score in st.session_state.scores.items():
     st.write(f"🏆 **{entity}**: {score} نقطة")
-    
+
+بعد حفظ الكود واضغط Commit changes، ستختفي الشاشة الحمراء وستعمل اللعبة فوراً مع عرض الشعار بوضوح!
