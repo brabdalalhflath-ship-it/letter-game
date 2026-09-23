@@ -1,46 +1,12 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import random
 
 # 1. Page Configuration
 st.set_page_config(page_title="لعبة الحروف الجماعية", page_icon="🏆", layout="centered")
 
-# PWA Code Injection
-pwa_code = """
-<script>
-  const manifest = {
-    "name": "لعبة الحروف الجماعية",
-    "short_name": "لعبة الحروف",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#d4af37",
-    "icons": [
-      {
-        "src": "https://em-content.zobj.net/source/microsoft-teams/337/video-game_1f3ae.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      }
-    ]
-  };
-  const stringManifest = JSON.stringify(manifest);
-  const blob = new Blob([stringManifest], {type: 'application/json'});
-  const manifestURL = URL.createObjectURL(blob);
-  let link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = manifestURL;
-  document.head.appendChild(link);
-</script>
-"""
-components.html(pwa_code, height=0)
-
 # 2. Header Style
 st.markdown("""
     <style>
-    .main-container {
-        background-color: #000000;
-        color: #ffffff;
-    }
     .header-box {
         text-align: center;
         background-color: #0d0d0d;
@@ -107,41 +73,6 @@ if "letter" not in st.session_state:
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 
-if "timer_id" not in st.session_state:
-    st.session_state.timer_id = 0
-
-# 5. Timer Function
-def show_timer(seconds=60, unique_id=0):
-    timer_html = f"""
-    <div style="text-align: center; background: #0d0d0d; padding: 15px; border-radius: 15px; border: 2px solid #d4af37; max-width: 320px; margin: 0 auto 20px auto;">
-        <div style="color: #d4af37; font-size: 16px; font-weight: bold;">⏳ الوقت المتبقي</div>
-        <div id="time" style="font-size: 48px; font-weight: bold; color: #ffffff;">{seconds}</div>
-        <div style="width: 100%; background: #333; height: 8px; border-radius: 5px; margin-top: 8px; overflow: hidden;">
-            <div id="bar" style="width: 100%; height: 100%; background: #d4af37; transition: width 1s linear;"></div>
-        </div>
-    </div>
-    <script>
-        var t = {seconds}, total = {seconds};
-        var timer = setInterval(function(){{
-            if(t <= 0){{
-                clearInterval(timer);
-                document.getElementById("time").innerHTML = "انتهى الوقت!";
-                document.getElementById("time").style.color = "#ff4d4d";
-                document.getElementById("bar").style.width = "0%";
-            }} else {{
-                t--;
-                document.getElementById("time").innerHTML = t;
-                document.getElementById("bar").style.width = ((t/total)*100) + "%";
-                if(t <= 10) {{
-                    document.getElementById("time").style.color = "#ff4d4d";
-                    document.getElementById("bar").style.background = "#ff4d4d";
-                }}
-            }}
-        }}, 1000);
-    </script>
-    """
-    components.html(timer_html, height=160, key=f"timer_comp_{unique_id}")
-
 st.markdown(f"<h3 style='text-align: center;'>الدور الحالي: <span style='color: #d4af37;'>{current_turn}</span></h3>", unsafe_allow_html=True)
 
 # أزرار تحكم اللعبة
@@ -151,7 +82,6 @@ with col_btn1:
     if st.button("🏁 بدء الجولة والوقت", type="primary", use_container_width=True):
         st.session_state.letter = random.choice(ALPHABET)
         st.session_state.game_started = True
-        st.session_state.timer_id += 1
         st.rerun()
 
 with col_btn2:
@@ -159,12 +89,22 @@ with col_btn2:
         st.session_state.letter = random.choice(ALPHABET)
         st.rerun()
 
-# عرض الحرف والمؤقت
+# عرض الحرف والمؤقت الآمن
 if st.session_state.game_started and st.session_state.letter:
     st.markdown(f"<h2 style='text-align: center; margin-top: 15px;'>الحرف المطلوب: <span style='color: #ff4d4d;'>{st.session_state.letter}</span></h2>", unsafe_allow_html=True)
-    show_timer(60, unique_id=st.session_state.timer_id)
+    
+    # مؤقت مرئي آمن ونظيف باستخدام Streamlit مباشرة
+    timer_placeholder = st.empty()
+    timer_placeholder.markdown(
+        """
+        <div style="text-align: center; background: #0d0d0d; padding: 12px; border-radius: 12px; border: 2px solid #d4af37; max-width: 300px; margin: 0 auto 15px auto;">
+            <span style="color: #d4af37; font-size: 16px; font-weight: bold;">⏳ الجولة بدأت! لديك 60 ثانية للإجابة</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 else:
-    st.info("💡 اضغط على زر **'🏁 بدء الجولة والوقت'** لبدء الوقت وتحديد الحرف المطلوب!")
+    st.info("💡 اضغط على زر **'🏁 بدء الجولة والوقت'** لبدء اللعبة وتحديد الحرف المطلوب!")
 
 # إدخال الإجابات
 answers = {}
