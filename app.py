@@ -31,11 +31,15 @@ st.markdown('<div class="header-box">', unsafe_allow_html=True)
 st.image("RF.jpeg", width=180) 
 st.markdown('<div class="game-title">🎮 لعبة إنسان حيوان نبات جماد بلاد</div></div>', unsafe_allow_html=True)
 
-# 3. Game Settings (Scores & Players)
+# 3. Game Settings (Scores, Players & Timer Duration)
 if "scores" not in st.session_state:
     st.session_state.scores = {}
 
-st.sidebar.title("⚙️ إعدادات اللاعبين")
+st.sidebar.title("⚙️ إعدادات اللعبة")
+
+# خيار لتحديد وقت الجولة (الافتراضي 30 ثانية بدلاً من 60)
+timer_seconds = st.sidebar.slider("⏱️ وقت الجولة (بالثواني):", min_value=10, max_value=60, value=30, step=5)
+
 players_count = st.sidebar.number_input("عدد اللاعبين:", min_value=1, max_value=8, value=2)
 players = []
 st.sidebar.markdown("### أسماء اللاعبين:")
@@ -57,15 +61,15 @@ with col_l1:
 
 with col_l2:
     st.markdown("<br>", unsafe_allow_html=True)
-    start_timer = st.button("⏳ بدء المؤقت (60 ثانية)", type="primary", use_container_width=True)
+    start_timer = st.button(f"⏳ بدء المؤقت ({timer_seconds} ثانية)", type="primary", use_container_width=True)
 
-# عرض المؤقت المرئي إذا تم الضغط عليه
+# عرض المؤقت المرئي بالمدّة المختارة
 if start_timer:
     st.markdown(
-        """
+        f"""
         <div style="text-align: center; background: #0d0d0d; padding: 15px; border-radius: 15px; border: 2px solid #d4af37; max-width: 320px; margin: 10px auto 20px auto;">
             <div style="color: #d4af37; font-size: 16px; font-weight: bold;">⏳ الوقت قيد العد التنازلي</div>
-            <div style="font-size: 32px; font-weight: bold; color: #ff4d4d; margin-top: 5px;">مفعل (60 ثانية)</div>
+            <div style="font-size: 32px; font-weight: bold; color: #ff4d4d; margin-top: 5px;">مفعل ({timer_seconds} ثانية)</div>
         </div>
         """,
         unsafe_allow_html=True
