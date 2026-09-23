@@ -11,11 +11,17 @@ pwa_code = """
   const manifest = {
     "name": "لعبة الحروف الجماعية",
     "short_name": "لعبة الحروف",
-    "start_url": "/",
+    "start_url": ".",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#d4af37",
-    "icons": [{"src": "https://em-content.zobj.net/source/microsoft-teams/337/video-game_1f3ae.png", "sizes": "192x192", "type": "image/png"}]
+    "icons": [
+      {
+        "src": "https://em-content.zobj.net/source/microsoft-teams/337/video-game_1f3ae.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      }
+    ]
   };
   const stringManifest = JSON.stringify(manifest);
   const blob = new Blob([stringManifest], {type: 'application/json'});
@@ -101,11 +107,11 @@ if "letter" not in st.session_state:
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 
-if "timer_key" not in st.session_state:
-    st.session_state.timer_key = 0
+if "timer_id" not in st.session_state:
+    st.session_state.timer_id = 0
 
 # 5. Timer Function
-def show_timer(seconds=60, key=0):
+def show_timer(seconds=60, unique_id=0):
     timer_html = f"""
     <div style="text-align: center; background: #0d0d0d; padding: 15px; border-radius: 15px; border: 2px solid #d4af37; max-width: 320px; margin: 0 auto 20px auto;">
         <div style="color: #d4af37; font-size: 16px; font-weight: bold;">⏳ الوقت المتبقي</div>
@@ -134,18 +140,18 @@ def show_timer(seconds=60, key=0):
         }}, 1000);
     </script>
     """
-    components.html(timer_html, height=160, key=f"timer_{key}")
+    components.html(timer_html, height=160, key=f"timer_comp_{unique_id}")
 
 st.markdown(f"<h3 style='text-align: center;'>الدور الحالي: <span style='color: #d4af37;'>{current_turn}</span></h3>", unsafe_allow_html=True)
 
-# زر بداية اللعبة بالجولة
+# أزرار تحكم اللعبة
 col_btn1, col_btn2 = st.columns([1, 1])
 
 with col_btn1:
     if st.button("🏁 بدء الجولة والوقت", type="primary", use_container_width=True):
         st.session_state.letter = random.choice(ALPHABET)
         st.session_state.game_started = True
-        st.session_state.timer_key += 1
+        st.session_state.timer_id += 1
         st.rerun()
 
 with col_btn2:
@@ -153,10 +159,10 @@ with col_btn2:
         st.session_state.letter = random.choice(ALPHABET)
         st.rerun()
 
-# عرض الحرف والمؤقت إذا بدأت الجولة
+# عرض الحرف والمؤقت
 if st.session_state.game_started and st.session_state.letter:
     st.markdown(f"<h2 style='text-align: center; margin-top: 15px;'>الحرف المطلوب: <span style='color: #ff4d4d;'>{st.session_state.letter}</span></h2>", unsafe_allow_html=True)
-    show_timer(60, key=st.session_state.timer_key)
+    show_timer(60, unique_id=st.session_state.timer_id)
 else:
     st.info("💡 اضغط على زر **'🏁 بدء الجولة والوقت'** لبدء الوقت وتحديد الحرف المطلوب!")
 
@@ -189,9 +195,9 @@ if st.button("✅ التحقق والاحتساب", type="primary", use_containe
         st.session_state.scores[current_turn] += round_score
         st.markdown("---")
         
-        if round_score >= 30:
+        if round_score >= 50:
             st.balloons()
-            st.success(f"🎉 **ممتاز يا {current_turn}!** حصلت على {round_score} نقطة في هذه الجولة.")
+            st.success(f"🎉 **ممتاز يا {current_turn}!** حصلت على العلامة الكاملة {round_score} نقطة!")
         else:
             st.info(f"👍 **جولة جيدة يا {current_turn}!** حصلت على {round_score} نقطة.")
 
