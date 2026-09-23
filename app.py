@@ -58,7 +58,7 @@ st.markdown("""
 # Header with Image
 st.markdown('<div class="header-box">', unsafe_allow_html=True)
 st.image("RF.jpeg", width=180) 
-st.markdown('<div class="game-title">🎮 لعبة إنسان حيوان جماد</div></div>', unsafe_allow_html=True)
+st.markdown('<div class="game-title">🎮 لعبة إنسان حيوان نبات جماد بلاد</div></div>', unsafe_allow_html=True)
 
 # 3. Game Settings
 st.sidebar.title("⚙️ إعدادات اللعبة")
@@ -91,8 +91,21 @@ else:
 
     current_turn = st.sidebar.selectbox("الفريق الحالي:", teams)
 
-# 4. Timer Function
-def show_timer(seconds=60):
+# 4. Main Game Logic State
+ALPHABET = ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'هـ', 'و', 'ي']
+CATEGORIES = ["إنسان", "حيوان", "نبات", "جماد", "بلاد"]
+
+if "letter" not in st.session_state:
+    st.session_state.letter = None
+
+if "game_started" not in st.session_state:
+    st.session_state.game_started = False
+
+if "timer_key" not in st.session_state:
+    st.session_state.timer_key = 0
+
+# 5. Timer Function
+def show_timer(seconds=60, key=0):
     timer_html = f"""
     <div style="text-align: center; background: #0d0d0d; padding: 15px; border-radius: 15px; border: 2px solid #d4af37; max-width: 320px; margin: 0 auto 20px auto;">
         <div style="color: #d4af37; font-size: 16px; font-weight: bold;">⏳ الوقت المتبقي</div>
@@ -121,53 +134,66 @@ def show_timer(seconds=60):
         }}, 1000);
     </script>
     """
-    components.html(timer_html, height=160)
-
-show_timer(60)
-
-# 5. Main Game Logic
-ALPHABET = ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'هـ', 'و', 'ي']
-CATEGORIES = ["إنسان", "حيوان", "جماد", "بلاد"]
-
-if "letter" not in st.session_state:
-    st.session_state.letter = random.choice(ALPHABET)
+    components.html(timer_html, height=160, key=f"timer_{key}")
 
 st.markdown(f"<h3 style='text-align: center;'>الدور الحالي: <span style='color: #d4af37;'>{current_turn}</span></h3>", unsafe_allow_html=True)
-st.markdown(f"<h2 style='text-align: center;'>الحرف المطلوب: <span style='color: #ff4d4d;'>{st.session_state.letter}</span></h2>", unsafe_allow_html=True)
 
-if st.button("🔄 جولة جديدة / تغيير الحرف"):
-    st.session_state.letter = random.choice(ALPHABET)
-    st.rerun()
+# زر بداية اللعبة بالجولة
+col_btn1, col_btn2 = st.columns([1, 1])
 
+with col_btn1:
+    if st.button("🏁 بدء الجولة والوقت", type="primary", use_container_width=True):
+        st.session_state.letter = random.choice(ALPHABET)
+        st.session_state.game_started = True
+        st.session_state.timer_key += 1
+        st.rerun()
+
+with col_btn2:
+    if st.button("🔄 تغيير الحرف فقط", use_container_width=True):
+        st.session_state.letter = random.choice(ALPHABET)
+        st.rerun()
+
+# عرض الحرف والمؤقت إذا بدأت الجولة
+if st.session_state.game_started and st.session_state.letter:
+    st.markdown(f"<h2 style='text-align: center; margin-top: 15px;'>الحرف المطلوب: <span style='color: #ff4d4d;'>{st.session_state.letter}</span></h2>", unsafe_allow_html=True)
+    show_timer(60, key=st.session_state.timer_key)
+else:
+    st.info("💡 اضغط على زر **'🏁 بدء الجولة والوقت'** لبدء الوقت وتحديد الحرف المطلوب!")
+
+# إدخال الإجابات
 answers = {}
-col1, col2 = st.columns(2)
+col_inputs = st.columns(len(CATEGORIES))
 for idx, cat in enumerate(CATEGORIES):
-    with (col1 if idx % 2 == 0 else col2):
-        answers[cat] = st.text_input(f"أدخل {cat}:", key=f"input_{cat}")
+    with col_inputs[idx % len(CATEGORIES)]:
+        answers[cat] = st.text_input(f"{cat}:", key=f"input_{cat}")
 
+# الاحتساب والتحقق
 if st.button("✅ التحقق والاحتساب", type="primary", use_container_width=True):
-    round_score = 0
-    current_l = st.session_state.letter
-    
-    st.markdown("---")
-    for cat, ans in answers.items():
-        word = ans.strip()
-        cleaned = word[2:] if word.startswith("ال") else word
-        
-        if cleaned and (cleaned.startswith(current_l) or (current_l == 'أ' and cleaned[0] in ['أ', 'إ', 'آ', 'ا'])):
-            round_score += 10
-            st.success(f"✓ {cat}: {word} (+10)")
-        else:
-            st.error(f"✗ {cat}: {word if word else 'فارغ'} (0)")
-            
-    st.session_state.scores[current_turn] += round_score
-    st.markdown("---")
-    
-    if round_score >= 30:
-        st.balloons()
-        st.success(f"🎉 **ممتاز يا {current_turn}!** حصلت على {round_score} نقطة في هذه الجولة.")
+    if not st.session_state.letter:
+        st.warning("⚠️ يرجى بدء الجولة أولاً بالضغط على زر 'بدء الجولة والوقت'!")
     else:
-        st.info(f"👍 **جولة جيدة يا {current_turn}!** حصلت على {round_score} نقطة.")
+        round_score = 0
+        current_l = st.session_state.letter
+        
+        st.markdown("---")
+        for cat, ans in answers.items():
+            word = ans.strip()
+            cleaned = word[2:] if word.startswith("ال") else word
+            
+            if cleaned and (cleaned.startswith(current_l) or (current_l == 'أ' and cleaned[0] in ['أ', 'إ', 'آ', 'ا'])):
+                round_score += 10
+                st.success(f"✓ {cat}: {word} (+10)")
+            else:
+                st.error(f"✗ {cat}: {word if word else 'فارغ'} (0)")
+                
+        st.session_state.scores[current_turn] += round_score
+        st.markdown("---")
+        
+        if round_score >= 30:
+            st.balloons()
+            st.success(f"🎉 **ممتاز يا {current_turn}!** حصلت على {round_score} نقطة في هذه الجولة.")
+        else:
+            st.info(f"👍 **جولة جيدة يا {current_turn}!** حصلت على {round_score} نقطة.")
 
 # 6. Leaderboard
 st.markdown("---")
