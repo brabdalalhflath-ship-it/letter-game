@@ -32,12 +32,18 @@ st.markdown('<div class="header-box">', unsafe_allow_html=True)
 st.image("RF.jpeg", width=180) 
 st.markdown('<div class="game-title">🎮 لعبة إنسان حيوان نبات جماد بلاد</div></div>', unsafe_allow_html=True)
 
-# 3. Game Settings
-st.sidebar.title("⚙️ إعدادات اللعبة")
-game_mode = st.sidebar.radio("اختر طريقة اللعب:", ["لعب فردي (لاعبين)", "لعب جماعي (فرق)"])
+# 3. Game Settings & Shared State via st.session_state
+if "shared_letter" not in st.session_state:
+    st.session_state.shared_letter = "أ"
+
+if "game_active" not in st.session_state:
+    st.session_state.game_active = False
 
 if "scores" not in st.session_state:
     st.session_state.scores = {}
+
+st.sidebar.title("⚙️ إعدادات اللعبة")
+game_mode = st.sidebar.radio("اختر طريقة اللعب:", ["لعب فردي (لاعبين)", "لعب جماعي (فرق)"])
 
 if game_mode == "لعب فردي (لاعبين)":
     players_count = st.sidebar.number_input("عدد اللاعبين:", min_value=1, max_value=8, value=2)
@@ -67,44 +73,35 @@ else:
 ALPHABET = ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'هـ', 'و', 'ي']
 CATEGORIES = ["إنسان", "حيوان", "نبات", "جماد", "بلاد"]
 
-if "letter" not in st.session_state:
-    st.session_state.letter = None
-
-if "game_started" not in st.session_state:
-    st.session_state.game_started = False
-
 st.markdown(f"<h3 style='text-align: center;'>الدور الحالي: <span style='color: #d4af37;'>{current_turn}</span></h3>", unsafe_allow_html=True)
 
 # أزرار تحكم اللعبة
 col_btn1, col_btn2 = st.columns([1, 1])
 
 with col_btn1:
-    if st.button("🏁 بدء الجولة والوقت", type="primary", use_container_width=True):
-        st.session_state.letter = random.choice(ALPHABET)
-        st.session_state.game_started = True
+    if st.button("🏁 بدء الجولة واختيار الحرف", type="primary", use_container_width=True):
+        st.session_state.shared_letter = random.choice(ALPHABET)
+        st.session_state.game_active = True
         st.rerun()
 
 with col_btn2:
-    if st.button("🔄 تغيير الحرف فقط", use_container_width=True):
-        st.session_state.letter = random.choice(ALPHABET)
+    if st.button("🔄 تغيير الحرف للجميع", use_container_width=True):
+        st.session_state.shared_letter = random.choice(ALPHABET)
         st.rerun()
 
-# عرض الحرف والمؤقت الآمن
-if st.session_state.game_started and st.session_state.letter:
-    st.markdown(f"<h2 style='text-align: center; margin-top: 15px;'>الحرف المطلوب: <span style='color: #ff4d4d;'>{st.session_state.letter}</span></h2>", unsafe_allow_html=True)
-    
-    # مؤقت مرئي آمن ونظيف باستخدام Streamlit مباشرة
-    timer_placeholder = st.empty()
-    timer_placeholder.markdown(
+# عرض الحرف الموحد للجميع
+if st.session_state.game_active:
+    st.markdown(f"<h2 style='text-align: center; margin-top: 15px;'>الحرف المطلوب للجميع: <span style='color: #ff4d4d;'>{st.session_state.shared_letter}</span></h2>", unsafe_allow_html=True)
+    st.markdown(
         """
-        <div style="text-align: center; background: #0d0d0d; padding: 12px; border-radius: 12px; border: 2px solid #d4af37; max-width: 300px; margin: 0 auto 15px auto;">
+        <div style="text-align: center; background: #0d0d0d; padding: 12px; border-radius: 12px; border: 2px solid #d4af37; max-width: 320px; margin: 0 auto 15px auto;">
             <span style="color: #d4af37; font-size: 16px; font-weight: bold;">⏳ الجولة بدأت! لديك 60 ثانية للإجابة</span>
         </div>
         """,
         unsafe_allow_html=True
     )
 else:
-    st.info("💡 اضغط على زر **'🏁 بدء الجولة والوقت'** لبدء اللعبة وتحديد الحرف المطلوب!")
+    st.info("💡 اضغط على زر **'🏁 بدء الجولة واختيار الحرف'** ليظهر نفس الحرف الموحد للجميع!")
 
 # إدخال الإجابات
 answers = {}
@@ -115,11 +112,11 @@ for idx, cat in enumerate(CATEGORIES):
 
 # الاحتساب والتحقق
 if st.button("✅ التحقق والاحتساب", type="primary", use_container_width=True):
-    if not st.session_state.letter:
-        st.warning("⚠️ يرجى بدء الجولة أولاً بالضغط على زر 'بدء الجولة والوقت'!")
+    if not st.session_state.game_active:
+        st.warning("⚠️ يرجى بدء الجولة أولاً!")
     else:
         round_score = 0
-        current_l = st.session_state.letter
+        current_l = st.session_state.shared_letter
         
         st.markdown("---")
         for cat, ans in answers.items():
