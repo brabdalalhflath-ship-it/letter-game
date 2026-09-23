@@ -47,13 +47,12 @@ for i in range(int(players_count)):
 
 current_turn = st.sidebar.selectbox("دور اللاعب الحالي:", players)
 
-st.markdown(f"<h3 style='text-align: center;'>دور اللاعب: <span style='color: #d4af37;'>{current_turn}</span></h3>", unsafe_allow_html=Type if 'Type' in globals() else str)
+st.markdown(f"<h3 style='text-align: center;'>دور اللاعب: <span style='color: #d4af37;'>{current_turn}</span></h3>", unsafe_allow_html=True)
 
 # 4. Input for the Real-life chosen letter & Timer Button
 col_l1, col_l2 = st.columns([1, 1])
 
 with col_l1:
-    # إدخال الحرف الذي اخترتوه في الواقع شفوياً
     current_letter = st.text_input("✍️ أدخل الحرف المتفق عليه (في الواقع):", max_chars=2, placeholder="مثال: ب")
 
 with col_l2:
